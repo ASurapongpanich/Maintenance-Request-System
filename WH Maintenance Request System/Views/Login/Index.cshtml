@@ -1,0 +1,203 @@
+﻿ @{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WH Maintenance Request System</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/blockUI/BlockUI.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<style>
+    @@font-face {
+        font-family: 'Prompt';
+        src: url('/fonts/Prompt/Prompt-Regular.ttf') format('truetype');
+    }
+
+    body {
+        font-family: 'Prompt';
+        background-image: url('/images/bg_login.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center; 
+        align-items: center;
+        padding: 20px;
+    }
+
+    .login-container {
+        background-color: rgba(45, 43, 43, 0.8);
+        padding: 30px;
+        border-radius: 5px;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .btn-login, .btn {
+        width: 100%;
+        background-color: #039ee3;
+        color: #FFFFFF;
+        border: none;
+        transition: all 0.3s ease;
+        padding: 10px;
+    }
+
+    .btn-login:hover, .btn:hover {
+        background-color: #0288d1;
+        color: #ffffff;
+        box-shadow: 0 0 12px rgba(3, 169, 244, 0.5);
+    }
+
+    .form-control {
+        margin-bottom: 15px;
+    }
+
+    .login-error {
+        color: red;
+        font-size: 16px;
+        margin-bottom: 15px;
+        display: none;
+    }
+
+    .remember-me {
+        margin: 15px 0;
+        text-align: center;
+        color: white;
+    }
+
+    @@media (min-width: 768px) {
+        body {
+            justify-content: flex-end;
+            padding-right: 10%;
+        }
+
+        .login-container {
+            margin-right: 10%;
+        }
+    }
+
+    @@media (max-width: 767px) and (orientation: landscape) {
+        body {
+            padding-right: 5%;
+        }
+        .login-container {
+            max-width: 450px;
+            padding: 20px;
+            margin-right: 5%;
+        }
+    }
+
+    @@media (max-width: 500px) {
+        body {
+            padding-right: 5%;
+        }
+        .login-container {
+            padding: 20px 15px;
+            margin-right: 5%;
+        }
+
+        .logo {
+            width: 250px;
+            height: auto;
+        }
+    }
+</style>
+
+<body>
+    <div class="containMain">
+        <div class="login-container">
+            <div class="text-center mb-4">
+                <img class="logo" src="/images/srt_logo_white.png" width="300" height="95" alt="DX Logo">
+            </div>
+            <div class="text-center mb-4" style="color:white; font-size:20px;">
+                WEB WH MAINTENANCE REQUEST SYSTEM
+            </div>
+            <div class="login-error"></div>
+            <div class="mb-3">
+                <input type="text" class="form-control" id="username" placeholder="Username" value="">
+            </div>
+            <div class="mb-3">
+                <input type="password" class="form-control" id="password" placeholder="Password" value="">
+            </div>
+            <div class="mb-3">
+                <button type="button" id="btnLogin" class="btn btn-login">
+                    <i class="fas fa-unlock-alt"></i> Login
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <script src="~/lib/blockUI/BlockUI.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#password').keypress(function (e) {
+                if (e.which === 13) {
+                    Login();
+                }
+            });
+
+            $("#btnLogin").click(function () {
+                Login();
+            });
+
+            function Login(){
+                $.blockUI();
+
+                if (!username || !password) {
+                    $(".login-error").text("Please enter your username and password.").show();
+                    $.unblockUI();
+                    return;
+                }
+
+                $(".login-error").hide();
+
+                $.ajax({
+                    url: 'http://192.168.75.16:8001/api/login',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        username: $("#username").val(),
+                        password: $("#password").val()
+                    }),
+                    success: function(response) {
+
+
+                        $.ajax({
+                            url: '/Login/Login',
+                            type: 'POST',
+                            data: {
+                                idEmployee: response.employeeInfo.manEmpNo,
+                                nameEn: response.employeeInfo.manNameEn,
+                                section: response.employeeInfo.manSection,
+                                expire: response.expire
+                            },
+                            success: function(result) {
+                                if (result.success) {
+                                    window.location.href = '/Dashboard/Index';
+                                } else {
+                                    $(".login-error").text(result.message).show();
+                                }
+                            }
+                        });
+                    },
+                    error: function() {
+                        $(".login-error").text("The username or password is incorrect. Please try again.").show();
+                    }
+                });
+                $.unblockUI();
+            }
+        });
+    </script>
+</body>
+</html>
