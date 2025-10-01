@@ -19,7 +19,6 @@
     }
 
     body {
-        font-family: 'Prompt';
         background-image: url('/images/bg_login.png');
         background-size: cover;
         background-position: center;
@@ -143,16 +142,17 @@
         $(document).ready(function () {
             $('#password').keypress(function (e) {
                 if (e.which === 13) {
+                    $.blockUI();
                     Login();
                 }
             });
 
             $("#btnLogin").click(function () {
+                $.blockUI();
                 Login();
             });
 
             function Login(){
-                $.blockUI();
 
                 if (!username || !password) {
                     $(".login-error").text("Please enter your username and password.").show();
@@ -172,30 +172,31 @@
                     }),
                     success: function(response) {
 
-
                         $.ajax({
                             url: '/Login/Login',
                             type: 'POST',
                             data: {
                                 idEmployee: response.employeeInfo.manEmpNo,
                                 nameEn: response.employeeInfo.manNameEn,
+                                position: response.employeeInfo.manPosition,
                                 section: response.employeeInfo.manSection,
                                 expire: response.expire
                             },
                             success: function(result) {
                                 if (result.success) {
-                                    window.location.href = '/Dashboard/Index';
+                                    window.location.href = '/Home/Index';
                                 } else {
+                                    $.unblockUI();
                                     $(".login-error").text(result.message).show();
                                 }
                             }
                         });
                     },
                     error: function() {
+                        $.unblockUI();
                         $(".login-error").text("The username or password is incorrect. Please try again.").show();
                     }
                 });
-                $.unblockUI();
             }
         });
     </script>

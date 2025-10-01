@@ -19,22 +19,22 @@ namespace WH_Maintenance_Request_System.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index", "Dashboard");
+                return RedirectToAction("Index", "Home");
             }
 
             return View();
         }
 
         [HttpPost]
-        public IActionResult Login(string idEmployee, string nameEn, string section, DateTime expire)
+        public IActionResult Login(string idEmployee, string nameEn, string section, string position, DateTime expire)
         {
             try
             {
                 var role = CheckRole(idEmployee);
-
+                //var role = "ADMIN";
                 if (section == "SCM_DC Logistics" && string.IsNullOrEmpty(role))
                 {
-                    role = "USER";
+                    role = "ADMIN";
                 }
 
                 if (!string.IsNullOrEmpty(role))
@@ -43,6 +43,8 @@ namespace WH_Maintenance_Request_System.Controllers
                     {
                         new Claim(ClaimTypes.NameIdentifier, idEmployee),
                         new Claim(ClaimTypes.Name, nameEn),
+                        new Claim("Position", position),
+                        new Claim("Section", section),
                         new Claim(ClaimTypes.Role, role)
                     };
 
@@ -79,7 +81,6 @@ namespace WH_Maintenance_Request_System.Controllers
                 return Json(new { success = false, message = "Login failed. Please contact IT." });
             }
         }
-
 
         public bool CheckPermission(string idEmployee)
         {

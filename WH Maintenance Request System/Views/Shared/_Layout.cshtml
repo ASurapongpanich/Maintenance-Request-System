@@ -1,56 +1,590 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@{
+    var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+    var NameIdentifier = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WH_Maintenance_Request_System</title>
+    <title>@ViewData["Title"] - Request System</title>
     <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/jquery-ui-1.14.1.custom/jquery-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/WH_Maintenance_Request_System.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/blockUI/BlockUI.css" asp-append-version="true" />
     <link href="~/lib/DataTables/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.4/css/fixedColumns.jqueryui.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0081cc;
+            --primary-light: #1a94d6;
+            --primary-dark: #0074b8;
+            --secondary: #48bfe3;
+            --accent: #00b4d8;
+            --text: #2b2d42;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
 
+        @@font-face {
+            font-family: 'Prompt';
+            src: url('/fonts/Prompt/Prompt-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f5f7fa;
+            color: #2b2d42;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            padding: 20px;
+            background: #eff7fa;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .logout-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 15px;
+            background-color: #fff;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+            text-decoration: none;
+            margin-right: 8px;
+            font-size: 0.9rem;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .header-text {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            width: fit-content;
+        }
+
+        .header-title {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 28px;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .header-logo img {
+            height: 40px;
+        }
+
+        .icon-menu-container {
+            display: flex;
+            justify-content: flex-start;
+            gap: 20px;
+            padding: 20px 0; 
+            flex-wrap: wrap;
+            background: transparent; 
+            border-radius: 0;
+            box-shadow: none;
+            margin-bottom: 0;
+        }
+
+        .icon-menu-item {
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .icon-box {
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .icon-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            background: #f8f9fa;
+        }
+
+        .icon-box i {
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .icon-box:hover i {
+            transform: scale(1.1);
+            color: var(--primary-dark);
+        }
+
+        .menu-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 24px;
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+
+        .text-top, .text-bottom {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: center;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .text-top {
+            font-weight: 600;
+            transform: translateY(0);
+        }
+
+        .text-bottom {
+            font-weight: 600;
+            transform: translateY(24px);
+        }
+
+        .icon-box:hover .text-top {
+            transform: translateY(-24px);
+            opacity: 0;
+        }
+
+        .icon-box:hover .text-bottom {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .menu-section {
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .section-title {
+            color: #2b2d42;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+            padding-left: 10px;
+            border-left: 4px solid #039ee3;
+            text-align: left; 
+        }
+        /* --- */
+        .notification-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .notification-item.unread {
+            background: #f0f8ff;
+        }
+            .notification-btn:hover {
+                background-color: var(--primary-dark);
+                transform: scale(1.1);
+            }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Notification panel */
+        .notification-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+        }
+
+        .notification-header {
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-close {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .notification-body {
+            padding: 0;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            align-items: flex-start;
+            transition: background 0.2s;
+        }
+
+            .notification-item:hover {
+                background: var(--light-gray);
+            }
+
+            
+
+        .notification-icon {
+            margin-right: 10px;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .notification-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .notification-action-btn {
+            padding: 3px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .approve-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+            .approve-btn:hover {
+                background: #218838;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+
+            .approve-btn:active {
+                background: #1e7e34;
+                transform: translateY(0);
+                box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+            }
+
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+            .reject-btn:hover {
+                background: #c82333;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+
+            .reject-btn:active {
+                background: #bd2130;
+                transform: translateY(0);
+                box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+            }
+
+        .mark-read-btn {
+            background: transparent;
+            color: var(--gray);
+            border: 1px solid var(--gray);
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WH_Maintenance_Request_System</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    </header>
+    <div class="dashboard-container">
+        <main role="main" class="main-content">
+            <div class="header">
+                <div class="header-logo" onclick="window.location.href='/Home/Index'">
+                    <img src="~/images/logo2.png" alt="Logo" />
+                </div>
+                <div class="user-info">
+                    <span class="fw-bold">
+                        @User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                    </span>
+                    <button class="logout-btn" onclick="window.location.href='/Login/Logout'">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
+             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - WH_Maintenance_Request_System - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    @* <div class="notification-btn" id="notificationBtn">
+        <i class="fas fa-bell"></i>
+        <span class="notification-badge" id="notificationBadge">3</span>
+    </div> *@
+
+    <div class="notification-panel" id="notificationPanel">
+        <div class="notification-header">
+            <span>Notification</span>
+            <span class="notification-close" id="notificationClose">&times;</span>
         </div>
-    </footer>
+        <div class="notification-body" id="notificationBody">
+            <div class="notification-item unread">
+                <i class="fas fa-file-alt notification-icon"></i>
+                <div class="notification-content">
+                    <div class="notification-title">Approval request #MR-2023-001</div>
+                    <div class="notification-text">Required: Electrical system maintenance</div>
+                    <div class="notification-time">10 minutes ago</div>
+                    <div class="notification-actions">
+                        <button class="notification-action-btn approve-btn">Approve</button>
+                        <button class="notification-action-btn reject-btn">Reject</button>
+                    </div>
+                </div>
+            </div>
+            <div class="notification-item unread">
+                <i class="fas fa-tools notification-icon"></i>
+                <div class="notification-content">
+                    <div class="notification-title">Approval request #MR-2023-002</div>
+                    <div class="notification-text">Required: Machine equipment replacement</div>
+                    <div class="notification-time">1 hour ago</div>
+                    <div class="notification-actions">
+                        <button class="notification-action-btn approve-btn">Approve</button>
+                        <button class="notification-action-btn reject-btn">Reject</button>
+                    </div>
+                </div>
+            </div>
+            <div class="notification-item">
+                <i class="fas fa-check-circle notification-icon"></i>
+                <div class="notification-content">
+                    <div class="notification-title">Approval request #MR-2023-000</div>
+                    <div class="notification-text">It has been approved: Water system improvement</div>
+                    <div class="notification-time">2 days ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/blockUI/BlockUI.js"></script>
     <script src="~/lib/DataTables/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedcolumns/5.0.4/js/dataTables.fixedColumns.min.js"></script>
     <script src="~/lib/sweetalert2/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+                
+            // Notification button click handler
+            $('#notificationBtn').click(function() {
+                $('#notificationPanel').toggle();
+                updateNotificationBadge();
+            });
+
+            // Close notification panel
+            $('#notificationClose').click(function() {
+                $('#notificationPanel').hide();
+            });
+
+            // Close when clicking outside
+            $(document).mouseup(function(e) {
+                if (!$('#notificationPanel').is(e.target) &&
+                    $('#notificationPanel').has(e.target).length === 0 &&
+                    !$('#notificationBtn').is(e.target) &&
+                    $('#notificationBtn').has(e.target).length === 0) {
+                    $('#notificationPanel').hide();
+                }
+            });
+
+            // Handle notification actions
+            $(document).on('click', '.approve-btn', function() {
+                const notificationItem = $(this).closest('.notification-item');
+                Swal.fire({
+                    title: 'Confirm approval',
+                    text: 'Do you want to approve this request?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Approve',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Here you would typically make an AJAX call to your backend
+                        notificationItem.find('.notification-icon').removeClass('fa-file-alt fa-tools').addClass('fa-check-circle');
+                        notificationItem.find('.notification-text').text('This request has already been approved by you.');
+                        notificationItem.removeClass('unread');
+                        $(this).parent().remove();
+                        updateNotificationBadge();
+
+                        Swal.fire(
+                            'Approved',
+                            'The request has been approved.',
+                            'success'
+                        );
+                    }
+                });
+            });
+
+            $(document).on('click', '.reject-btn', function() {
+                const notificationItem = $(this).closest('.notification-item');
+                Swal.fire({
+                    title: 'Confirm rejection',
+                    text: 'Do you want to reject this request?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Reject',
+                    cancelButtonText: 'Cancle',
+                    confirmButtonColor: '#dc3545'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Here you would typically make an AJAX call to your backend
+                        notificationItem.find('.notification-icon').removeClass('fa-file-alt fa-tools').addClass('fa-times-circle');
+                        notificationItem.find('.notification-text').text('This request has already been rejected by you.');
+                        notificationItem.removeClass('unread');
+                        $(this).parent().remove();
+                        updateNotificationBadge();
+
+                        Swal.fire(
+                            'Rejected',
+                            'The request has been rejected.',
+                            'success'
+                        );
+                    }
+                });
+            });
+
+
+            // Function to update notification badge count
+            function updateNotificationBadge() {
+                const unreadCount = $('.notification-item.unread').length;
+                $('#notificationBadge').text(unreadCount);
+                if (unreadCount === 0) {
+                    $('#notificationBadge').hide();
+                } else {
+                    $('#notificationBadge').show();
+                }
+            }
+
+            // Initialize
+            updateNotificationBadge();
+
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

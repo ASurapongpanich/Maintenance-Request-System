@@ -1,0 +1,120 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Request";
+    var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+    var nameEN = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+    var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+    var position = User.Claims.FirstOrDefault(c => c.Type == "Position")?.Value;
+    var section2 = User.Claims.FirstOrDefault(c => c.Type == "Section")?.Value;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="section-title m-0">New Request</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newRequestModal">
+            New Request
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table id="requestTable" class="table table-striped table-bordered" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Employee</th>
+                        <th>Request Type</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>001</td>
+                        <td>John Doe</td>
+                        <td>Help</td>
+                        <td>Need access to system</td>
+                        <td>2025-07-24</td>
+                        <td>Pending</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="newRequestModal" tabindex="-1" aria-labelledby="newRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newRequestModalLabel">New Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Your Form Starts Here -->
+                <div class="container-fluid">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label>ID Employee</label>
+                            <input type="text" class="form-control" value="@id" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Name</label>
+                            <input type="text" class="form-control" value="@nameEN" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Department</label>
+                            <input type="text" class="form-control" value="@section2" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label>Request type</label>
+                            <select class="form-select" id="requestType" required>
+                                <option value="" selected disabled>Select type</option>
+                                <option value="problem">Problem</option>
+                                <option value="help">Help</option>
+                                <option value="information">Information</option>
+                                <option value="approval">Approval</option>
+                                <option value="repair">Repair</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Tel</label>
+                            <input type="text" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="description" class="form-label">Detail</label>
+                            <textarea class="form-control" id="description" rows="5" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- Your Form Ends Here -->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-success">Submit Request</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#requestTable').DataTable();
+        });
+    </script>
+}
+

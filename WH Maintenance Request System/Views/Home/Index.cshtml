@@ -1,8 +1,160 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Home";
+    var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+    var position = User.Claims.FirstOrDefault(c => c.Type == "Position")?.Value;
+    var section = User.Claims.FirstOrDefault(c => c.Type == "Section")?.Value;
+}
+<style>
+    .icon-menu-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 20px 0;
+    flex-wrap: wrap;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    }
+
+    .icon-menu-item {
+    text-decoration: none;
+    color: var(--text);
+    }
+
+    .icon-box {
+    width: 150px;
+    height: 150px;
+    background: var(--primary);
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    color: var(--light);
+    }
+
+    .icon-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    background: var(--primary);
+    }
+
+    .icon-box i {
+    font-size: 60px;
+    color: var(--light);
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    }
+
+    .icon-box:hover i {
+    transform: scale(1.1);
+    color: var(--light);
+    }
+
+    .menu-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    }
+
+    .text-top, .text-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    transition: all 0.3s ease;
+    width: 100%;
+    font-size: 20px
+    }
+
+    .text-top {
+    font-weight: 600;
+    transform: translateY(0);
+    }
+
+    .text-bottom {
+    font-weight: 600;
+    transform: translateY(24px);
+    }
+
+    .icon-box:hover .text-top {
+    transform: translateY(-24px);
+    opacity: 0;
+    }
+
+    .icon-box:hover .text-bottom {
+    transform: translateY(0);
+    opacity: 1;
+    }
+
+    .menu-section {
+    margin-bottom: 30px;
+    background: var(--light);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    }
+
+    .section-title {
+    color: var(--text);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+    padding-left: 10px;
+    border-left: 4px solid var(--primary);
+    text-align: left;
+    }
+</style>
+@* <--- GENERAL ---> *@
+@* <div class="menu-section">
+    <h3 class="section-title">GENERAL</h3>
+    <div class="icon-menu-container">
+        <a href="/Request/Index" class="icon-menu-item">
+            <div class="icon-box">
+                <i class="fas fa-file-alt"></i>
+                <div class="menu-text">
+                    <span class="text-top">REQUEST</span>
+                    <span class="text-bottom">REQUEST</span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div> *@
+
+@if (userRole == "ADMIN" || section == "SRT_GWS_Equipment")
+{
+    @* <--- WH ---> *@
+    <div class="menu-section">
+        <h3 class="section-title">WH</h3>
+        <div class="icon-menu-container">
+            <a href="/Monitor/Index" class="icon-menu-item">
+                <div class="icon-box">
+                    <i class="fas fa-desktop"></i>
+                    <div class="menu-text">
+                        <span class="text-top">MONITOR</span>
+                        <span class="text-bottom">MONITOR</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+
+        });
+    </script>
+}
