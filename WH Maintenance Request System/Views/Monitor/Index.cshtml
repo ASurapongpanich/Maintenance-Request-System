@@ -247,28 +247,28 @@
         <div class="row mb-3">
             <div class="col-md-3">
                 <label>Serial Number</label>
-                <input class="form-control" type="text" id="serialNumber" name="serialNumber" readonly>
+                <input class="form-control" type="text" id="serialNumber" name="serialNumber" disabled>
             </div>
             <div class="col-md-3">
                 <label>Model</label>
-                <input class="form-control" type="text" id="model" name="model" readonly>
+                <input class="form-control" type="text" id="model" name="model" disabled>
             </div>
             <div class="col-md-3">
                 <label>Type</label>
-                <select class="form-control" id="type" name="type">
+                <select class="form-control" id="type" name="type" disabled>
                     <option value="">-- Select Type --</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label>Location</label>
-                <input class="form-control" type="text" id="location" name="location" readonly>
+                <input class="form-control" type="text" id="location" name="location" disabled>
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col-md-3">
                 <label>IP</label>
-                <input class="form-control" type="text" id="ip" name="ip" readonly>
+                <input class="form-control" type="text" id="ip" name="ip" disabled>
             </div>
             <div class="col-md-3">
                 <label>Status</label>
@@ -280,18 +280,20 @@
             </div>
             <div class="col-md-3">
                 <label>Host Name</label>
-                <input class="form-control" type="text" id="hostName" name="hostName" readonly>
+                <input class="form-control" type="text" id="hostName" name="hostName" disabled>
             </div>
         </div>
-
-        <!-- Row ใหม่สำหรับปุ่ม Update -->
-        <div class="row mb-3">
-            <div class="col d-flex justify-content-end">
-                <button class="btn btn-success" type="submit">
-                    <i class="fa-solid fa-pen-to-square"></i> Update
-                </button>
+        
+        @if (userRole == "ADMIN")
+        {
+            <div class="row mb-3">
+                <div class="col d-flex justify-content-end">
+                    <button class="btn btn-success" type="submit">
+                        <i class="fa-solid fa-pen-to-square"></i> Update
+                    </button>
+                </div>
             </div>
-        </div>
+        }
     </form>
 </div>
 
@@ -410,11 +412,10 @@
             $('#equipmentTable').on('click', '.equipment-detail', function (e) {
                 e.preventDefault();
                 $('#repairProblem').removeClass('is-invalid');
-                // ใช้ DataTables API ดึงข้อมูล row
+
                 var table = $('#equipmentTable').DataTable();
                 var rowData = table.row($(this).closest('tr')).data();
 
-                // ใส่ค่าลงใน modal
                 $('#repairSerialNumber').val(rowData.serialNumber);
                 $('#repairEquipmentId').val(rowData.No);
                 $('#repairModel').val(rowData.model);
@@ -423,7 +424,6 @@
                 $('#repairIP').val(rowData.ip);
                 $('#repairHostName').val(rowData.hostName);
 
-                // แสดง modal
                 $('#repairRequestModal').modal('show');
             });
 
@@ -501,34 +501,32 @@
             GetType();
             loadEquipmentTypesForForm();
 
-            $('#exportExcel').on('click', function() {
+            $('#exportExcel').on('click', function () {
                 var table = $('#equipmentTable').DataTable();
 
-                // ดึง column headers
                 var headers = table.columns().header().toArray().map(h => $(h).text());
 
-                // เตรียม array ของ array สำหรับ Excel
                 var exportData = [];
-                exportData.push(headers); // add header
+                exportData.push(headers);
 
-                // loop แต่ละ row
-                table.rows().every(function(rowIdx, tableLoop, rowLoop){
+                table.rows().every(function (rowIdx) {
                     var row = [];
-                    table.columns().every(function(colIdx, tableLoop, colLoop){
-                        // ดึงค่าที่ render แล้ว
-                        var cellData = table.cell(rowIdx, colIdx).render('display');
+
+                    table.columns().every(function (colIdx) {
+                        var cellData = table.cell(rowIdx, colIdx).render('export');
                         row.push(cellData);
                     });
+
                     exportData.push(row);
                 });
 
-                // สร้าง workbook และ worksheet
                 var wb = XLSX.utils.book_new();
                 var ws = XLSX.utils.aoa_to_sheet(exportData);
 
                 XLSX.utils.book_append_sheet(wb, ws, "Equipment");
                 XLSX.writeFile(wb, "EquipmentData.xlsx");
             });
+
 
             $('#equipmentTable').on('click', 'tbody tr', function () {
                 const table = $('#equipmentTable').DataTable();
@@ -696,11 +694,17 @@
                     className: 'text-center',
                     width: '50px',
                     orderable: false,
-                    render: function(data) {
-                        if (!data) return '';
-                        if (data.toLowerCase() === 'online')  return '<img src="/images/check.png" style="width:32px; height:32px;">';
-                        if (data.toLowerCase() === 'offline' || data.toLowerCase() === 'repair') return '<img src="/images/remove.png" style="width:28px; height:28px;">';
-                        return '';
+                    render: function(data, type, row) {
+                        if (type === 'display') {
+                            if (data.toLowerCase() === 'online') {
+                                return '<img src="/images/check.png" style="width:28px; height:28px;">';
+                            } else {
+                                return '<img src="/images/remove.png" style="width:28px; height:28px;">';
+                            }
+                        } else {
+                            if (data.toLowerCase() === 'online') return '✔';
+                            else return '✖';
+                        }
                     }
                 });
 

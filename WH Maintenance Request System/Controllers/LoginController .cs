@@ -31,10 +31,9 @@ namespace WH_Maintenance_Request_System.Controllers
             try
             {
                 var role = CheckRole(idEmployee);
-                //var role = "ADMIN";
-                if (section == "SCM_DC Logistics" && string.IsNullOrEmpty(role))
+                if (section == "SCM_DC" && string.IsNullOrEmpty(role))
                 {
-                    role = "ADMIN";
+                    role = "USER";
                 }
 
                 if (!string.IsNullOrEmpty(role))
@@ -65,7 +64,7 @@ namespace WH_Maintenance_Request_System.Controllers
                         HttpOnly = true, 
                         Secure = false,   
                         SameSite = SameSiteMode.Strict,
-                        Domain = "http://192.168.75.16:8522/"
+                        Domain = "192.168.75.16"
                     };
 
                     return Json(new { success = true });
@@ -82,44 +81,6 @@ namespace WH_Maintenance_Request_System.Controllers
             }
         }
 
-        public bool CheckPermission(string idEmployee)
-        {
-            try
-            {
-                using (var conn = new SqlConnection(_connStr))
-                {
-                    conn.Open();
-                    string sql = @"
-                                    SELECT COUNT(*) 
-                                    FROM tbl_role 
-                                    WHERE user_id = @idEmployee 
-                                    AND function_name = 'DASHBOARD_OE'
-                                ";
-
-                    using (var cmd = new SqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@idEmployee", idEmployee);
-
-                        int count = (int)cmd.ExecuteScalar();
-
-                        if (count > 0)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogUtil.ErrorLog("LoginController : CheckPermission " + ex.Message);
-                return false;
-            }
-        }
-
         public string CheckRole(string idEmployee)
         {
             try
@@ -129,9 +90,9 @@ namespace WH_Maintenance_Request_System.Controllers
                     conn.Open();
                     string sql = @"
                         SELECT role_name 
-                        FROM tbl_role 
+                        FROM role 
                         WHERE user_id = @idEmployee 
-                        AND function_name = 'DASHBOARD_OE'
+                        AND function_name = 'MONITOR'
                     ";
 
                     using (var cmd = new SqlCommand(sql, conn))
